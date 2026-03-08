@@ -1,86 +1,65 @@
 #include <stdio.h>
 
-int KnapsackBT(int *weight_list, int *value_list, int total_items, int max_capacity, int current_index, int *result_array);
+int KnapsackBT(int *w, int *v, int n, int wx, int i, int *x);
 
 int main() {
+    int n = 5, wx = 11;
+    int w[5] = {1, 2, 5, 6, 7};
+    int v[5] = {1, 6, 18, 22, 28};
+    int *x, vx;
 
-    int total_items = 5;
-    int max_capacity = 11;
+    x = new int[n];
 
-    int weight_list[5] = {1,2,5,6,7};
-    int value_list[5] = {1,6,18,22,28};
+    vx = KnapsackBT(w, v, n, wx, 0, x);
 
-    int *result_array;
-    int maximum_value;
+    printf("Value = %d\n", vx);
 
-    result_array = new int[total_items];
-
-    for(int i=0;i<total_items;i++)
-        result_array[i] = 0;
-
-    maximum_value = KnapsackBT(weight_list,value_list,total_items,max_capacity,0,result_array);
-
-    printf("Value = %d\n",maximum_value);
-
-    for(int i=0;i<total_items;i++)
-        printf("%d ",result_array[i]);
-
-    delete[] result_array;
+    for(int i = 0; i < n; i++)
+        printf("%d ", x[i]);
 
     return 0;
 }
 
-int KnapsackBT(int *weight_list, int *value_list, int total_items, int max_capacity, int current_index, int *result_array){
-
-    if(current_index == total_items)
+int KnapsackBT(int *w, int *v, int n, int wx, int i, int *x)
+{
+    if(i == n)
         return 0;
 
-    int *array_if_excluded = new int[total_items];
-    int *array_if_included = new int[total_items];
+    int *x0 = new int[n];
+    int *x1 = new int[n];
 
-    for(int i=0;i<total_items;i++){
-        array_if_excluded[i] = 0;
-        array_if_included[i] = 0;
+    for(int k = 0; k < n; k++){
+        x0[k] = 0;
+        x1[k] = 0;
     }
 
-    int value_if_excluded =
-        KnapsackBT(weight_list,value_list,total_items,max_capacity,current_index+1,array_if_excluded);
+    int v0 = KnapsackBT(w, v, n, wx, i + 1, x0);
 
-    int value_if_included = 0;
-
-    if(max_capacity >= weight_list[current_index]){
-
-        int remaining_capacity = max_capacity - weight_list[current_index];
-
-        value_if_included =
-            value_list[current_index] +
-            KnapsackBT(weight_list,value_list,total_items,remaining_capacity,current_index+1,array_if_included);
+    int v1 = 0;
+    if(wx >= w[i]){
+        v1 = v[i] + KnapsackBT(w, v, n, wx - w[i], i + 1, x1);
     }
 
-    int highest_value_found;
+    if(v1 > v0){
+        for(int k = i + 1; k < n; k++)
+            x[k] = x1[k];
 
-    if(value_if_included > value_if_excluded){
+        x[i] = 1;
 
-        highest_value_found = value_if_included;
+        delete[] x0;
+        delete[] x1;
 
-        for(int i=current_index+1;i<total_items;i++)
-            result_array[i] = array_if_included[i];
-
-        result_array[current_index] = 1;
-
+        return v1;
     }
     else{
+        for(int k = i + 1; k < n; k++)
+            x[k] = x0[k];
 
-        highest_value_found = value_if_excluded;
+        x[i] = 0;
 
-        for(int i=current_index+1;i<total_items;i++)
-            result_array[i] = array_if_excluded[i];
+        delete[] x0;
+        delete[] x1;
 
-        result_array[current_index] = 0;
+        return v0;
     }
-
-    delete[] array_if_excluded;
-    delete[] array_if_included;
-
-    return highest_value_found;
 }
